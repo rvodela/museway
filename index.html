@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuseWay — Your Life, Triaged</title>
+<meta name="description" content="MuseWay is your personal Ops Coordinator: it reads across WhatsApp, Gmail, and Drive, understands travel risk, and surfaces what actually needs you — nothing else.">
+<style>
+  :root {
+    --bg: #0f0c29;
+    --bg-2: #1e1b4b;
+    --accent: #8b5cf6;
+    --accent-2: #6366f1;
+    --text: #f5f3ff;
+    --text-dim: #c4b5fd;
+    --card-bg: rgba(255,255,255,0.06);
+    --card-border: rgba(255,255,255,0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+    color: var(--text);
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+  a { color: inherit; }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+  header {
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(12px);
+    background: rgba(15,12,41,0.75);
+    border-bottom: 1px solid var(--card-border);
+  }
+  nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 0; flex-wrap: wrap; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 20px; letter-spacing: -0.02em; }
+  .logo-mark {
+    width: 32px; height: 32px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .nav-links { display: flex; gap: 32px; font-size: 15px; color: var(--text-dim); }
+  .nav-links a:hover { color: var(--text); }
+  @media (max-width: 640px) { .nav-links { display: none; } }
+  .nav-cta {
+    padding: 9px 18px; border-radius: 999px; font-size: 14px; font-weight: 600;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: white; text-decoration: none; white-space: nowrap; flex-shrink: 0;
+  }
+
+  .hero { padding: 110px 0 80px; text-align: center; position: relative; }
+  .hero::before {
+    content: ""; position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+    width: 800px; height: 800px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(139,92,246,0.25) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .eyebrow {
+    display: inline-block; padding: 6px 16px; border-radius: 999px;
+    background: var(--card-bg); border: 1px solid var(--card-border);
+    font-size: 13px; color: var(--text-dim); margin-bottom: 24px; font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  h1 {
+    font-size: clamp(40px, 6vw, 68px); font-weight: 800; letter-spacing: -0.03em;
+    max-width: 900px; margin: 0 auto 24px; position: relative;
+  }
+  h1 .gradient-text {
+    background: linear-gradient(135deg, #c4b5fd, #a78bfa 40%, #818cf8);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .subhead {
+    font-size: clamp(17px, 2vw, 20px); color: var(--text-dim);
+    max-width: 620px; margin: 0 auto 40px; position: relative;
+  }
+  .hero-ctas { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; position: relative; }
+  .btn-primary, .btn-secondary {
+    padding: 14px 28px; border-radius: 999px; font-weight: 600; font-size: 15px;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white;
+    box-shadow: 0 8px 24px rgba(139,92,246,0.35);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(139,92,246,0.45); }
+  .btn-secondary {
+    background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text);
+  }
+  .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+
+  .hero-shot { margin-top: 64px; display: flex; justify-content: center; position: relative; }
+  .hero-shot img {
+    width: 280px; border-radius: 36px; border: 8px solid rgba(255,255,255,0.08);
+    box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+  }
+
+  section { padding: 90px 0; }
+  .section-head { text-align: center; max-width: 640px; margin: 0 auto 56px; }
+  .section-tag { color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+  .section-head h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 16px; }
+  .section-head p { color: var(--text-dim); font-size: 17px; }
+
+  .feature-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+  }
+  @media (max-width: 860px) { .feature-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .feature-grid { grid-template-columns: 1fr; } }
+  .feature-card {
+    background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px;
+    padding: 28px; transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+  .feature-card:hover { transform: translateY(-4px); border-color: rgba(139,92,246,0.4); }
+  .feature-icon {
+    width: 44px; height: 44px; border-radius: 12px; margin-bottom: 18px;
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+    background: linear-gradient(135deg, rgba(139,92,246,0.25), rgba(99,102,241,0.25));
+  }
+  .feature-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .feature-card p { color: var(--text-dim); font-size: 14.5px; }
+
+  .showcase { background: rgba(0,0,0,0.15); }
+  .showcase-scroll {
+    display: flex; gap: 24px; overflow-x: auto; padding: 12px 4px 24px;
+    scroll-snap-type: x mandatory;
+  }
+  .showcase-scroll::-webkit-scrollbar { height: 8px; }
+  .showcase-scroll::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 8px; }
+  .shot-card {
+    flex: 0 0 auto; scroll-snap-align: start; width: 220px; text-align: center;
+  }
+  .shot-card img {
+    width: 100%; border-radius: 22px; border: 6px solid rgba(255,255,255,0.08);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4); margin-bottom: 14px;
+  }
+  .shot-card span { font-size: 13.5px; color: var(--text-dim); }
+
+  .ipad-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 20px; }
+  @media (max-width: 860px) { .ipad-strip { grid-template-columns: 1fr; } }
+  .ipad-strip img {
+    width: 100%; border-radius: 16px; border: 6px solid rgba(255,255,255,0.08);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  }
+
+  .privacy-band {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center;
+  }
+  @media (max-width: 860px) { .privacy-band { grid-template-columns: 1fr; } }
+  .privacy-list { display: flex; flex-direction: column; gap: 18px; }
+  .privacy-item { display: flex; gap: 14px; align-items: flex-start; }
+  .privacy-item .dot {
+    width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0; margin-top: 2px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;
+  }
+  .privacy-item p { color: var(--text-dim); font-size: 15px; }
+  .privacy-item strong { color: var(--text); display: block; margin-bottom: 2px; }
+  .privacy-visual {
+    background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 24px;
+    padding: 40px; text-align: center; font-size: 15px; color: var(--text-dim);
+  }
+  .privacy-visual .big-icon { font-size: 48px; margin-bottom: 16px; }
+
+  .cta-band {
+    text-align: center; border-radius: 28px; margin: 0 24px;
+    background: linear-gradient(135deg, rgba(139,92,246,0.18), rgba(99,102,241,0.18));
+    border: 1px solid var(--card-border); padding: 72px 24px;
+  }
+  .cta-band h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; margin-bottom: 16px; }
+  .cta-band p { color: var(--text-dim); margin-bottom: 32px; }
+
+  footer { padding: 48px 0; border-top: 1px solid var(--card-border); }
+  .footer-row {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+  }
+  .footer-links { display: flex; gap: 24px; font-size: 14px; color: var(--text-dim); }
+  .footer-links a:hover { color: var(--text); }
+  .footer-note { font-size: 13px; color: var(--text-dim); opacity: 0.7; margin-top: 24px; text-align: center; }
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="container">
+    <div class="logo">
+      <div class="logo-mark">✦</div>
+      MuseWay
+    </div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#showcase">Screens</a>
+      <a href="#privacy">Privacy</a>
+    </div>
+    <a class="nav-cta" href="#download">Get the app</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <div class="eyebrow">Now available for iPhone &amp; iPad</div>
+    <h1>Your life makes noise.<br><span class="gradient-text">MuseWay finds the signal.</span></h1>
+    <p class="subhead">
+      One AI-powered triage pass across WhatsApp, Gmail, and Drive — plus live travel
+      risk and a private mood check-in — so you only see what actually needs you today.
+    </p>
+    <div class="hero-ctas">
+      <a class="btn-primary" href="#download">Download on the App Store</a>
+      <a class="btn-secondary" href="#features">See how it works</a>
+    </div>
+    <div class="hero-shot">
+      <img src="images/image1.png" alt="MuseWay home screen showing today's triaged items">
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-tag">What it does</div>
+      <h2>One coordinator. Every channel.</h2>
+      <p>MuseWay doesn't replace your apps — it reads across them, understands urgency, and hands you a short list worth acting on.</p>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">💬</div>
+        <h3>WhatsApp Triage</h3>
+        <p>Catches the messages that actually matter across your chats — no more scrolling to find the one that needed a reply an hour ago.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✉️</div>
+        <h3>Gmail Triage</h3>
+        <p>Surfaces urgent mail from the noise of your inbox, with just enough context to know if it's worth opening right now.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📁</div>
+        <h3>Drive Watch</h3>
+        <p>Flags meaningful file changes — a shared budget update, a new draft — without you having to babysit a folder.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✈️</div>
+        <h3>Travel Advisory</h3>
+        <p>Live U.S. State Department advisories matched against your actual itinerary — plus one-tap hand-off to book anywhere you like.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🙂</div>
+        <h3>Mood Mate</h3>
+        <p>A private, photo-based check-in you control — nothing is stored, nothing is shared, it's just for you.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Biometric-Gated</h3>
+        <p>Every run is gated behind Face ID or Touch ID, and your data lives in on-device storage — not a server you don't control.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="showcase" class="showcase">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-tag">A closer look</div>
+      <h2>Built for iPhone</h2>
+      <p>Every screen designed to get you in, informed, and back out — fast.</p>
+    </div>
+    <div class="showcase-scroll">
+      <div class="shot-card"><img src="images/image1.png" alt="Home triage dashboard"><span>Today's Triage</span></div>
+      <div class="shot-card"><img src="images/image2.png" alt="WhatsApp triage detail"><span>WhatsApp Triage</span></div>
+      <div class="shot-card"><img src="images/image3.png" alt="Gmail triage detail"><span>Gmail Triage</span></div>
+      <div class="shot-card"><img src="images/image4.png" alt="Google Drive changes"><span>Drive Watch</span></div>
+      <div class="shot-card"><img src="images/image5.png" alt="Travel advisory feed"><span>Travel Advisory</span></div>
+      <div class="shot-card"><img src="images/image6.png" alt="Mood check screen"><span>Mood Mate</span></div>
+      <div class="shot-card"><img src="images/image7.png" alt="Settings and connected accounts"><span>Connected Accounts</span></div>
+      <div class="shot-card"><img src="images/image8.png" alt="Sign in screen"><span>Sign In</span></div>
+      <div class="shot-card"><img src="images/image9.png" alt="Schedule settings"><span>Schedule</span></div>
+      <div class="shot-card"><img src="images/image10.png" alt="Triage item detail"><span>Take Action</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-head">
+      <div class="section-tag">And on the big screen</div>
+      <h2>Just as sharp on iPad</h2>
+      <p>Split views, more context, same one-glance clarity.</p>
+    </div>
+    <div class="ipad-strip">
+      <img src="ipad/image1.png" alt="iPad home split view">
+      <img src="ipad/image2.png" alt="iPad triage list and detail">
+      <img src="ipad/image3.png" alt="iPad travel advisory">
+    </div>
+  </div>
+</section>
+
+<section id="privacy">
+  <div class="container">
+    <div class="privacy-band">
+      <div class="privacy-list">
+        <div class="section-tag">Privacy first</div>
+        <h2 style="font-size: 32px; font-weight: 800; margin-bottom: 8px;">Your data stays yours.</h2>
+        <div class="privacy-item">
+          <div class="dot">1</div>
+          <p><strong>On-device storage.</strong> Triage history lives in local, encrypted storage — not a third-party server.</p>
+        </div>
+        <div class="privacy-item">
+          <div class="dot">2</div>
+          <p><strong>Read-only access.</strong> MuseWay never sends messages, emails, or files on your behalf — it only reads to summarize.</p>
+        </div>
+        <div class="privacy-item">
+          <div class="dot">3</div>
+          <p><strong>You control every connection.</strong> Disconnect Gmail, Drive, or WhatsApp any time from Settings — no lingering access.</p>
+        </div>
+        <div class="privacy-item">
+          <div class="dot">4</div>
+          <p><strong>Mood Mate photos are never saved.</strong> Analyzed in the moment, then gone.</p>
+        </div>
+      </div>
+      <div class="privacy-visual">
+        <div class="big-icon">🛡️</div>
+        Biometric authentication (Face ID / Touch ID) is required before every triage run — MuseWay never runs silently in the background without your explicit go-ahead.
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="download">
+  <div class="container">
+    <div class="cta-band">
+      <h2>Stop scrolling. Start knowing.</h2>
+      <p>MuseWay is free to try — connect the accounts you want, skip the rest.</p>
+      <div class="hero-ctas">
+        <a class="btn-primary" href="#">Download on the App Store</a>
+        <a class="btn-secondary" href="#">Get it on Google Play</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-row">
+      <div class="logo">
+        <div class="logo-mark">✦</div>
+        MuseWay
+      </div>
+      <div class="footer-links">
+        <a href="#features">Features</a>
+        <a href="#privacy">Privacy</a>
+        <a href="mailto:support@museway.app">Support</a>
+      </div>
+    </div>
+    <p class="footer-note">MuseWay is an independent app and is not affiliated with WhatsApp, Meta, Google, or Apple. All trademarks belong to their respective owners.</p>
+  </div>
+</footer>
+
+</body>
+</html>
